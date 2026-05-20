@@ -1,0 +1,100 @@
+@model List<FitTrack.Models.FitnessGoal>
+@{
+    ViewData["Title"] = "Goal Tracker";
+    var goalTints = new Dictionary<string, (string bg, string fg)>
+    {
+        ["Weight Loss"]  = ("rgba(139,92,246,.12)", "#8B5CF6"),
+        ["Muscle Gain"]  = ("rgba(0,191,165,.12)",  "#00BFA5"),
+        ["Endurance"]    = ("rgba(255,107,53,.12)",  "#FF6B35"),
+        ["Flexibility"]  = ("rgba(245,158,11,.12)",  "#92400E"),
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <div class="ft-h1">Goal Tracker</div>
+        <div class="ft-muted mt-1">
+            @Model.Count(g => g.Status == "In Progress") active &middot; @Model.Count(g => g.Status == "Completed") completed
+        </div>
+    </div>
+    <a asp-action="Create" class="btn btn-ft-orange d-flex align-items-center gap-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add Goal
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5" style="color:var(--ft-ink-3);">
+            <div style="font-size:2.5rem;margin-bottom:12px;">🎯</div>
+            <p class="mb-0">No goals set yet. <a asp-action="Create" style="color:var(--ft-teal);font-weight:600;">Set your first goal!</a></p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var g in Model)
+        {
+            var tintTuple = goalTints.GetValueOrDefault(g.GoalType ?? "", ("rgba(107,115,144,.12)", "#6B7390"));
+            var tintBg = tintTuple.Item1;
+            var tintFg = tintTuple.Item2;
+            var statusBadge = g.Status switch {
+                "Completed"   => "ft-badge-good",
+                "Abandoned"   => "ft-badge-bad",
+                "In Progress" => "ft-badge-teal",
+                _             => "ft-badge-gray"
+            };
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100" style="position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;right:0;width:140px;height:140px;border-radius:50%;background:@tintBg;transform:translate(40%,-40%);opacity:.5;pointer-events:none;"></div>
+                    <div class="card-body d-flex flex-column gap-3" style="position:relative;">
+                        <div class="d-flex justify-content-between align-items-flex-start gap-2">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="ft-icon-box-lg d-grid" style="background:@tintBg;color:@tintFg;border-radius:10px;display:grid;place-items:center;flex-shrink:0;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>
+                                        <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;font-size:15px;color:var(--ft-ink)">@g.GoalTitle</div>
+                                    <div class="ft-muted" style="font-size:11.5px;margin-top:2px;">
+                                        @(g.GoalType ?? "Goal") · Target by @g.TargetDate.ToString("MMM dd, yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="ft-badge @statusBadge" style="flex-shrink:0;">@g.Status</span>
+                        </div>
+
+                        <div class="d-flex align-items-flex-end justify-content-between">
+                            <div>
+                                <div class="ft-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;">Progress</div>
+                                <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:4px;color:var(--ft-ink)">
+                                    @g.CurrentValue <span style="color:var(--ft-ink-3);font-weight:500;font-size:14px">/ @g.TargetValue</span>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:22px;font-weight:700;color:@tintFg;letter-spacing:-.02em;">@g.ProgressPercentage%</div>
+                            </div>
+                        </div>
+
+                        <div class="progress" style="height:10px;">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width:@g.ProgressPercentage%;background:@tintFg;"
+                                 aria-valuenow="@g.ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-auto pt-1">
+                            <a asp-action="Details" asp-route-id="@g.FitnessGoalId" class="btn btn-sm btn-outline-secondary">View</a>
+                            <a asp-action="Edit" asp-route-id="@g.FitnessGoalId" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@g.FitnessGoalId" class="btn btn-sm btn-danger ms-auto">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

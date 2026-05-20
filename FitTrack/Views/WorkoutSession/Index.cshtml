@@ -1,0 +1,156 @@
+@model FitTrack.Models.ViewModels.WorkoutIndexViewModel
+@{
+    ViewData["Title"] = "Workout Planner";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <div class="ft-h1">Workout Planner</div>
+        <div class="ft-muted mt-1">@Model.Sessions.Count sessions logged</div>
+    </div>
+    <a asp-action="Create" class="btn btn-ft-orange d-flex align-items-center gap-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Log Workout
+    </a>
+</div>
+
+<!-- Weekly summary -->
+<div class="row g-3 mb-4">
+    <div class="col-6">
+        <div class="ft-stat-card">
+            <div class="ft-stat-ico ft-ib-teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>
+                </svg>
+            </div>
+            <div class="ft-stat-lbl">This Week</div>
+            <div class="ft-stat-val" style="color:var(--ft-teal)">@Model.WeekTotalSessions <span style="font-size:13px;font-weight:500;color:var(--ft-ink-3)">sessions</span></div>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="ft-stat-card">
+            <div class="ft-stat-ico ft-ib-orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3s4 4 4 9a4 4 0 0 1-8 0c0-1.5.5-2.5 1.2-3.2-.2 1.7.6 2.6 1.3 2.6.8 0 1.5-.6 1.5-1.7 0-2.4-2-3.7-2-5.2 0-1 .5-1.5 2-1.5z"/>
+                </svg>
+            </div>
+            <div class="ft-stat-lbl">Calories Burned</div>
+            <div class="ft-stat-val" style="color:var(--ft-orange)">@Model.WeekTotalCalories.ToString("N0") <span style="font-size:13px;font-weight:500;color:var(--ft-ink-3)">kcal</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Category filter -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="d-flex align-items-center gap-3 flex-wrap">
+            <label class="form-label mb-0 fw-semibold" style="font-size:12px;color:var(--ft-ink-2);">Filter</label>
+            <select name="category" class="form-select form-select-sm" style="width:auto;min-width:160px;" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                @foreach (var cat in Model.Categories)
+                {
+                    <option value="@cat" selected="@(Model.SelectedCategory == cat ? "selected" : null)">@cat</option>
+                }
+            </select>
+            @if (!string.IsNullOrEmpty(Model.SelectedCategory))
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Clear</a>
+            }
+        </form>
+    </div>
+</div>
+
+<!-- Sessions -->
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="ft-h2">@(string.IsNullOrEmpty(Model.SelectedCategory) ? "All Sessions" : Model.SelectedCategory + " Sessions")</div>
+        <span class="ft-badge ft-badge-teal">@Model.Sessions.Count sessions</span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Sessions.Any())
+        {
+            <div class="text-center py-5" style="color:var(--ft-ink-3);">
+                <div style="font-size:2.5rem;margin-bottom:12px;">🏃</div>
+                <p class="mb-0">No workout sessions yet. <a asp-action="Create" style="color:var(--ft-teal);font-weight:600;">Log your first workout!</a></p>
+            </div>
+        }
+        else
+        {
+            <!-- Desktop table -->
+            <div class="table-responsive d-none d-md-block">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Workout</th>
+                            <th>Category</th>
+                            <th>Duration</th>
+                            <th>Calories</th>
+                            <th>Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model.Sessions)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="ft-icon-box ft-ib-teal">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                                                <path d="M6.5 6.5v11M3 9v6M17.5 6.5v11M21 9v6M6.5 12h11"/>
+                                            </svg>
+                                        </div>
+                                        <span class="fw-semibold" style="color:var(--ft-ink)">@s.WorkoutName</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="ft-badge @(s.Category == "Cardio" ? "ft-badge-orange" : s.Category == "Strength" ? "ft-badge-teal" : "ft-badge-warn")">@s.Category</span>
+                                </td>
+                                <td><span class="ft-badge ft-badge-gray">@s.DurationMinutes min</span></td>
+                                <td style="font-weight:600;color:var(--ft-orange)">@s.CaloriesBurned kcal</td>
+                                <td style="color:var(--ft-ink-3)">@s.SessionDate.ToString("MMM dd, yyyy")</td>
+                                <td class="text-end">
+                                    <a asp-action="Details" asp-route-id="@s.WorkoutSessionId" class="btn btn-sm btn-outline-secondary me-1">View</a>
+                                    <a asp-action="Edit" asp-route-id="@s.WorkoutSessionId" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                    <a asp-action="Delete" asp-route-id="@s.WorkoutSessionId" class="btn btn-sm btn-danger">Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile card list -->
+            <div class="d-md-none p-3 d-flex flex-column gap-3">
+                @foreach (var s in Model.Sessions)
+                {
+                    <div style="border:1px solid var(--ft-line);border-radius:var(--ft-radius-lg);overflow:hidden;">
+                        <div style="padding:14px 16px;background:var(--ft-bg);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                            <div style="font-weight:600;color:var(--ft-ink);font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@s.WorkoutName</div>
+                            <span class="ft-badge @(s.Category == "Cardio" ? "ft-badge-orange" : s.Category == "Strength" ? "ft-badge-teal" : "ft-badge-warn")" style="flex-shrink:0;">@s.Category</span>
+                        </div>
+                        <div style="padding:12px 16px;display:flex;gap:24px;">
+                            <div>
+                                <div class="ft-stat-lbl" style="margin-bottom:2px;">Duration</div>
+                                <div style="font-weight:600;font-size:14px;">@s.DurationMinutes <span style="font-size:11px;color:var(--ft-ink-3)">min</span></div>
+                            </div>
+                            <div>
+                                <div class="ft-stat-lbl" style="margin-bottom:2px;">Calories</div>
+                                <div style="font-weight:600;font-size:14px;color:var(--ft-orange);">@s.CaloriesBurned <span style="font-size:11px;color:var(--ft-ink-3)">kcal</span></div>
+                            </div>
+                            <div>
+                                <div class="ft-stat-lbl" style="margin-bottom:2px;">Date</div>
+                                <div style="font-size:13px;color:var(--ft-ink-3);">@s.SessionDate.ToString("MMM dd, yyyy")</div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;border-top:1px solid var(--ft-line);display:flex;gap:8px;">
+                            <a asp-action="Edit" asp-route-id="@s.WorkoutSessionId" class="btn btn-sm btn-outline-primary" style="flex:1;">Edit</a>
+                            <a asp-action="Details" asp-route-id="@s.WorkoutSessionId" class="btn btn-sm btn-outline-secondary" style="flex:1;">View</a>
+                            <a asp-action="Delete" asp-route-id="@s.WorkoutSessionId" class="btn btn-sm btn-danger" style="flex:1;">Delete</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

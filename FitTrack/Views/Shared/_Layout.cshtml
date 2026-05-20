@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FitTrack</title>
+    <script type="importmap"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/FitTrack.styles.css" asp-append-version="true" />
+</head>
+<body>
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction     = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    bool IsActive(string c, string a = "") =>
+        currentController.Equals(c, StringComparison.OrdinalIgnoreCase) &&
+        (string.IsNullOrEmpty(a) || currentAction.Equals(a, StringComparison.OrdinalIgnoreCase));
+
+    string NavClass(string c, string a = "") => IsActive(c, a) ? "ft-nav-item active" : "ft-nav-item";
+}
+
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<div class="ft-app">
+
+    <!-- ── Sidebar ── -->
+    <aside class="ft-sidebar">
+        <button class="ft-sidebar-close" id="ftSidebarClose" aria-label="Close menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <div class="ft-brand">
+            <div class="ft-brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6.5 6.5v11M3 9v6M17.5 6.5v11M21 9v6M6.5 12h11"/>
+                </svg>
+            </div>
+            <div>
+                <div class="ft-brand-name">FitTrack</div>
+                <div class="ft-brand-sub">Train smarter</div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="ft-nav-label">Workspace</div>
+
+            <a asp-controller="Home" asp-action="Index" class="@NavClass("Home", "Index")">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/>
+                    <rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>
+                </svg>
+                <span>Dashboard</span>
+                @if (IsActive("Home", "Index")) { <span class="ft-nav-dot"></span> }
+            </a>
+
+            <a asp-controller="WorkoutSession" asp-action="Index" class="@NavClass("WorkoutSession")">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6.5 6.5v11M3 9v6M17.5 6.5v11M21 9v6M6.5 12h11"/>
+                </svg>
+                <span>Workout Planner</span>
+                @if (IsActive("WorkoutSession")) { <span class="ft-nav-dot"></span> }
+            </a>
+
+            <a asp-controller="MealLog" asp-action="Index" class="@NavClass("MealLog")">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 7c.5-2 2-3.5 4-3.5C16 5.5 14.5 7 12 7zM18 12c0-3-2-5-4.5-5-1 0-1.7.4-2.3.7-.5.2-.9.4-1.4.4s-.9-.2-1.4-.4C7.7 7.4 7 7 6 7c-2.5 0-4.5 2-4.5 5 0 5 3 9 5.5 9 1 0 1.7-.4 2.3-.7.5-.2.9-.4 1.4-.4s.9.2 1.4.4c.6.3 1.3.7 2.3.7 2.5 0 5.5-4 5.5-9z" stroke-linejoin="round"/>
+                </svg>
+                <span>Nutrition Tracker</span>
+                @if (IsActive("MealLog")) { <span class="ft-nav-dot"></span> }
+            </a>
+
+            <a asp-controller="FitnessGoal" asp-action="Index" class="@NavClass("FitnessGoal")">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                </svg>
+                <span>Goal Tracker</span>
+                @if (IsActive("FitnessGoal")) { <span class="ft-nav-dot"></span> }
+            </a>
+
+            <a asp-controller="UserProfile" asp-action="Index" class="@NavClass("UserProfile")">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
+                </svg>
+                <span>Profile</span>
+                @if (IsActive("UserProfile")) { <span class="ft-nav-dot"></span> }
+            </a>
+        </nav>
+
+        <div class="ft-sidebar-foot">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                var userName = User.Identity?.Name ?? "User";
+                var initials = string.Join("", userName.Split(' ', '@').Where(s => s.Length > 0).Take(2).Select(s => s[0].ToString().ToUpper()));
+                if (string.IsNullOrEmpty(initials)) initials = userName.Length > 0 ? userName[0].ToString().ToUpper() : "U";
+                <div class="ft-user-pill">
+                    <div class="ft-user-av">@initials</div>
+                    <div style="min-width:0;flex:1">
+                        <div class="ft-user-name">@userName</div>
+                        <div class="ft-user-email">Pro member</div>
+                    </div>
+                </div>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                    <button type="submit" class="ft-nav-item" style="width:100%;border:0;cursor:pointer;background:transparent;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 5h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h12"/>
+                        </svg>
+                        <span>Log out</span>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" class="ft-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 5h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h12" style="transform:scaleX(-1);transform-origin:center"/>
+                    </svg>
+                    <span>Log in</span>
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="ft-nav-item" style="margin-top:2px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
+                    </svg>
+                    <span>Register</span>
+                </a>
+            }
+        </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <div class="ft-main">
+
+        <!-- Topbar -->
+        <header class="ft-topbar">
+            <button class="ft-hamburger" id="ftHamburger" aria-label="Open menu">
+              <span></span><span></span><span></span>
+            </button>
+            <div class="ft-topbar-crumb">
+                <span class="ft-topbar-prefix">FitTrack <span style="color:var(--ft-ink-4);margin:0 6px">/</span></span>
+                <strong>@(ViewData["Title"]?.ToString() ?? "Dashboard")</strong>
+            </div>
+            <div class="ft-topbar-right">
+                @if (!SignInManager.IsSignedIn(User))
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-sm">Log in</a>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-secondary btn-sm">Register</a>
+                }
+            </div>
+        </header>
+
+        <!-- Page content -->
+        <div class="ft-content">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="ft-footer">
+            &copy; 2026 FitTrack &mdash; Your Personal Fitness Companion
+        </footer>
+
+    </div><!-- /.ft-main -->
+
+    <div class="ft-backdrop" id="ftBackdrop"></div>
+
+</div><!-- /.ft-app -->
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<script>
+(function(){
+  var ham = document.getElementById('ftHamburger');
+  var sidebar = document.querySelector('.ft-sidebar');
+  var backdrop = document.getElementById('ftBackdrop');
+  var closeBtn = document.getElementById('ftSidebarClose');
+  function open(){ sidebar.classList.add('open'); backdrop.classList.add('show'); document.body.style.overflow='hidden'; }
+  function close(){ sidebar.classList.remove('open'); backdrop.classList.remove('show'); document.body.style.overflow=''; }
+  if(ham) ham.addEventListener('click', open);
+  if(backdrop) backdrop.addEventListener('click', close);
+  if(closeBtn) closeBtn.addEventListener('click', close);
+  // Swipe to close
+  var tx=0;
+  if(sidebar){
+    sidebar.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+    sidebar.addEventListener('touchend',function(e){if(tx - e.changedTouches[0].clientX > 60) close();},{passive:true});
+  }
+})();
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

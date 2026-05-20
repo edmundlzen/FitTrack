@@ -1,0 +1,51 @@
+@model FitTrack.Models.WorkoutSession
+@{
+    ViewData["Title"] = "Workout Details";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+        <div class="card">
+            <div class="card-header ft-card-header-dark d-flex align-items-center justify-content-between">
+                <div class="ft-h2" style="color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@Model.WorkoutName</div>
+                <span class="ft-badge @(Model.Category == "Cardio" ? "ft-badge-orange" : Model.Category == "Strength" ? "ft-badge-teal" : "ft-badge-warn")" style="flex-shrink:0;margin-left:10px;">@Model.Category</span>
+            </div>
+            <div class="card-body p-3 p-md-4">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="ft-stat-card" style="gap:4px;">
+                            <div class="ft-stat-lbl">Duration</div>
+                            <div class="ft-stat-val" style="color:var(--ft-teal)">@Model.DurationMinutes <span style="font-size:14px;font-weight:500;color:var(--ft-ink-3)">min</span></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="ft-stat-card" style="gap:4px;">
+                            <div class="ft-stat-lbl">Calories Burned</div>
+                            <div class="ft-stat-val" style="color:var(--ft-orange)">@Model.CaloriesBurned <span style="font-size:14px;font-weight:500;color:var(--ft-ink-3)">kcal</span></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div style="padding:14px;background:var(--ft-bg);border-radius:var(--ft-radius);border:1px solid var(--ft-line);">
+                            <div class="ft-stat-lbl mb-1">Session Date</div>
+                            <div style="font-weight:600;color:var(--ft-ink);">@Model.SessionDate.ToString("dddd, MMMM dd yyyy")</div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-12">
+                            <div style="padding:14px;background:var(--ft-bg);border-radius:var(--ft-radius);border:1px solid var(--ft-line);">
+                                <div class="ft-stat-lbl mb-1">Notes</div>
+                                <div style="color:var(--ft-ink-2);font-size:13.5px;">@Model.Notes</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex gap-2 flex-wrap">
+                <a asp-action="Edit" asp-route-id="@Model.WorkoutSessionId" class="btn btn-primary flex-fill">Edit</a>
+                <a asp-action="Delete" asp-route-id="@Model.WorkoutSessionId" class="btn btn-danger flex-fill">Delete</a>
+                <a asp-action="Index" class="btn btn-outline-secondary flex-fill">Back</a>
+            </div>
+        </div>
+    </div>
+</div>

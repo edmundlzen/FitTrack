@@ -1,0 +1,109 @@
+@model FitTrack.Models.UserProfile
+@{
+    ViewData["Title"] = "My Profile";
+    var initials = string.Concat((Model.FullName ?? "U").Split(' ').Take(2).Select(s => s[0].ToString().ToUpper()));
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <div class="ft-h1">Your Profile</div>
+        <div class="ft-muted mt-1">Personal info and body metrics.</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.UserProfileId" class="btn btn-primary d-flex align-items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l5 5-11 11H5v-5z"/></svg>
+            Edit Profile
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.UserProfileId" class="btn btn-danger">Delete</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Profile card -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body d-flex flex-column gap-3 align-items-center text-center py-4">
+                @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                {
+                    <img src="~/uploads/@Model.ProfilePicture" alt="Profile"
+                         style="width:80px;height:80px;border-radius:18px;object-fit:cover;box-shadow:0 6px 18px rgba(0,191,165,.25);" />
+                }
+                else
+                {
+                    <div style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,var(--ft-teal),#06D6BC);display:grid;place-items:center;color:#fff;font-weight:700;font-size:26px;box-shadow:0 6px 18px rgba(0,191,165,.25);">
+                        @initials
+                    </div>
+                }
+
+                <div>
+                    <div style="font-size:18px;font-weight:700;letter-spacing:-.01em;color:var(--ft-ink);">@Model.FullName</div>
+                    <div class="ft-muted" style="margin-top:4px;">@Model.Gender &middot; @Model.Age years old</div>
+                    <div style="margin-top:8px;">
+                        <span class="ft-badge ft-badge-teal">Pro member since @Model.CreatedAt.ToString("MMMM yyyy")</span>
+                    </div>
+                </div>
+            </div>
+            <div style="border-top:1px solid var(--ft-line);padding:14px 20px;display:flex;flex-direction:column;gap:0;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--ft-line-2);">
+                    <span class="ft-muted">Height</span><strong>@Model.Height cm</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--ft-line-2);">
+                    <span class="ft-muted">Weight</span><strong>@Model.Weight kg</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;">
+                    <span class="ft-muted">BMI</span><strong>@Model.BMI</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body metrics -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="ft-h2">Body Metrics</div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div style="padding:14px;border:1px solid var(--ft-line);border-radius:10px;">
+                            <div class="ft-muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;">Height</div>
+                            <div style="font-size:24px;font-weight:700;color:var(--ft-ink);margin-top:4px;">@Model.Height cm</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div style="padding:14px;border:1px solid var(--ft-line);border-radius:10px;">
+                            <div class="ft-muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;">Weight</div>
+                            <div style="font-size:24px;font-weight:700;color:var(--ft-ink);margin-top:4px;">@Model.Weight kg</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div style="padding:14px;border:1px solid var(--ft-line);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                            <div>
+                                <div class="ft-muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;">BMI (Body Mass Index)</div>
+                                <div style="font-size:32px;font-weight:700;letter-spacing:-.02em;color:var(--ft-ink);margin-top:4px;">@Model.BMI</div>
+                            </div>
+                            @{
+                                var bmiBadge = Model.BMICategory switch {
+                                    "Underweight" => "ft-badge-warn",
+                                    "Normal"      => "ft-badge-good",
+                                    "Overweight"  => "ft-badge-orange",
+                                    _             => "ft-badge-bad"
+                                };
+                            }
+                            <span class="ft-badge @bmiBadge" style="font-size:13px;padding:6px 14px;">@Model.BMICategory</span>
+                        </div>
+                        <div style="margin-top:8px;font-size:11.5px;color:var(--ft-ink-3);display:flex;gap:12px;flex-wrap:wrap;">
+                            <span><span class="ft-badge ft-badge-warn">Underweight</span> &lt; 18.5</span>
+                            <span><span class="ft-badge ft-badge-good">Normal</span> 18.5–24.9</span>
+                            <span><span class="ft-badge ft-badge-orange">Overweight</span> 25–29.9</span>
+                            <span><span class="ft-badge ft-badge-bad">Obese</span> ≥ 30</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">← Back to Dashboard</a>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+@model FitTrack.Models.FitnessGoal
+@{
+    ViewData["Title"] = "Delete Goal";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Delete Fitness Goal</h4>
+            </div>
+            <div class="card-body p-4 text-center">
+                <p class="fs-5 mb-1">Are you sure you want to delete</p>
+                <p class="fs-4 fw-bold text-danger">@Model.GoalTitle</p>
+                <p class="text-muted">@Model.GoalType · Target: @Model.TargetDate.ToString("MMMM dd, yyyy")</p>
+
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="FitnessGoalId" />
+                    <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button type="submit" class="btn btn-danger px-4">Yes, Delete</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,133 @@
+@model FitTrack.Models.ViewModels.NutritionIndexViewModel
+@{
+    ViewData["Title"] = "Nutrition Tracker";
+    var mealTypeOrder = new[] { "Breakfast", "Lunch", "Dinner", "Snack" };
+    var mealAccents = new Dictionary<string, string>
+    {
+        ["Breakfast"] = "#F59E0B", ["Lunch"] = "#00BFA5", ["Dinner"] = "#8B5CF6", ["Snack"] = "#FF6B35"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <div class="ft-h1">Nutrition Tracker</div>
+        <div class="ft-muted mt-1">Log meals and stay on top of macros.</div>
+    </div>
+    <a asp-action="Create" class="btn btn-ft-orange d-flex align-items-center gap-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Log Meal
+    </a>
+</div>
+
+<!-- Daily macro summary -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="ft-h2">Today's Totals</div>
+        <div class="ft-muted mt-1">@DateTime.Today.ToString("MMMM dd, yyyy")</div>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-6 col-sm-3">
+                <div style="padding:14px;border:1px solid var(--ft-line);border-radius:10px;">
+                    <div class="ft-muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;">Calories</div>
+                    <div style="font-size:26px;font-weight:700;color:var(--ft-orange);letter-spacing:-.02em;margin-top:4px;">@Model.TodayCalories</div>
+                    <div class="ft-muted">kcal</div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-3">
+                <div style="padding:14px;border:1px solid var(--ft-line);border-radius:10px;">
+                    <div class="ft-muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;">Protein</div>
+                    <div style="font-size:26px;font-weight:700;color:var(--ft-teal);letter-spacing:-.02em;margin-top:4px;">@Model.TodayProtein.ToString("F1")</div>
+                    <div class="ft-muted">g</div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-3">
+                <div style="padding:14px;border:1px solid var(--ft-line);border-radius:10px;">
+                    <div class="ft-muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;">Carbohydrates</div>
+                    <div style="font-size:26px;font-weight:700;color:#3B82F6;letter-spacing:-.02em;margin-top:4px;">@Model.TodayCarbohydrates.ToString("F1")</div>
+                    <div class="ft-muted">g</div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-3">
+                <div style="padding:14px;border:1px solid var(--ft-line);border-radius:10px;">
+                    <div class="ft-muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;">Fats</div>
+                    <div style="font-size:26px;font-weight:700;color:#8B5CF6;letter-spacing:-.02em;margin-top:4px;">@Model.TodayFats.ToString("F1")</div>
+                    <div class="ft-muted">g</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Meals grouped by type -->
+@if (!Model.AllMeals.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5" style="color:var(--ft-ink-3);">
+            <div style="font-size:2.5rem;margin-bottom:12px;">🥗</div>
+            <p class="mb-0">No meals logged yet. <a asp-action="Create" style="color:var(--ft-teal);font-weight:600;">Log your first meal!</a></p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var mealType in mealTypeOrder)
+        {
+            if (Model.MealsByType.TryGetValue(mealType, out var meals))
+            {
+                var accent = mealAccents.GetValueOrDefault(mealType, "#6B7390");
+                var subTotal = meals.Sum(m => m.Calories);
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width:5px;height:22px;border-radius:3px;background:@accent;flex-shrink:0;"></div>
+                                <div>
+                                    <div class="ft-h2">@mealType</div>
+                                    <div class="ft-muted" style="font-size:11px;margin-top:1px;">@meals.Count item(s) · @subTotal kcal</div>
+                                </div>
+                            </div>
+                            <a asp-action="Create" class="btn btn-sm btn-outline-secondary">+ Add</a>
+                        </div>
+                        <div class="card-body p-0">
+                            @if (!meals.Any())
+                            {
+                                <div class="text-center py-4" style="color:var(--ft-ink-3);font-size:13px;">Nothing logged yet.</div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Meal</th>
+                                                <th>Cal</th>
+                                                <th>P / C / F</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var m in meals)
+                                            {
+                                                <tr>
+                                                    <td class="fw-semibold" style="color:var(--ft-ink)">@m.MealName</td>
+                                                    <td style="color:var(--ft-orange);font-weight:600;">@m.Calories</td>
+                                                    <td style="font-size:11.5px;color:var(--ft-ink-3);">@m.Protein.ToString("F0")g / @m.Carbohydrates.ToString("F0")g / @m.Fats.ToString("F0")g</td>
+                                                    <td class="text-end" style="white-space:nowrap;">
+                                                        <a asp-action="Edit" asp-route-id="@m.MealLogId" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                                        <a asp-action="Delete" asp-route-id="@m.MealLogId" class="btn btn-sm btn-danger">Delete</a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+}

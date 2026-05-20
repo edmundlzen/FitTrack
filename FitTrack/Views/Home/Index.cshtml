@@ -1,0 +1,173 @@
+@model FitTrack.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Welcome banner -->
+<div class="ft-welcome-banner mb-4">
+    <div class="ft-welcome-inner d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <div style="font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#8089B0;font-weight:600;">
+                @DateTime.Today.ToString("dddd · MMMM dd")
+            </div>
+            <div style="font-size:26px;font-weight:700;letter-spacing:-.01em;margin-top:6px;color:#fff;">
+                Welcome back, @Model.WelcomeName 💪
+            </div>
+            <div style="color:#B7BFE0;margin-top:6px;font-size:13.5px;">
+                Track your workouts, nutrition, and goals all in one place.
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="WorkoutSession" asp-action="Create"
+               style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.16);"
+               class="btn btn-outline-light btn-sm">
+                + Log Workout
+            </a>
+            <a asp-controller="MealLog" asp-action="Create" class="btn btn-ft-orange btn-sm">
+                + Log Meal
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="ft-stat-card">
+            <div class="ft-stat-ico ft-ib-teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6.5 6.5v11M3 9v6M17.5 6.5v11M21 9v6M6.5 12h11"/>
+                </svg>
+            </div>
+            <div class="ft-stat-lbl">Total Workouts</div>
+            <div class="ft-stat-val" style="color:var(--ft-teal)">@Model.TotalWorkouts</div>
+            <div class="ft-stat-sub">
+                <a asp-controller="WorkoutSession" asp-action="Index" style="color:var(--ft-teal);font-weight:600;font-size:11.5px;text-decoration:none;">View sessions →</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="ft-stat-card">
+            <div class="ft-stat-ico ft-ib-orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3s4 4 4 9a4 4 0 0 1-8 0c0-1.5.5-2.5 1.2-3.2-.2 1.7.6 2.6 1.3 2.6.8 0 1.5-.6 1.5-1.7 0-2.4-2-3.7-2-5.2 0-1 .5-1.5 2-1.5z"/>
+                </svg>
+            </div>
+            <div class="ft-stat-lbl">Calories Burned</div>
+            <div class="ft-stat-val" style="color:var(--ft-orange)">@Model.TotalCaloriesBurned.ToString("N0")</div>
+            <div class="ft-stat-sub">
+                <a asp-controller="WorkoutSession" asp-action="Index" style="color:var(--ft-orange);font-weight:600;font-size:11.5px;text-decoration:none;">View sessions →</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="ft-stat-card">
+            <div class="ft-stat-ico ft-ib-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 7c.5-2 2-3.5 4-3.5C16 5.5 14.5 7 12 7zM18 12c0-3-2-5-4.5-5-1 0-1.7.4-2.3.7-.5.2-.9.4-1.4.4s-.9-.2-1.4-.4C7.7 7.4 7 7 6 7c-2.5 0-4.5 2-4.5 5 0 5 3 9 5.5 9 1 0 1.7-.4 2.3-.7.5-.2.9-.4 1.4-.4s.9.2 1.4.4c.6.3 1.3.7 2.3.7 2.5 0 5.5-4 5.5-9z" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="ft-stat-lbl">Meals Today</div>
+            <div class="ft-stat-val" style="color:#3B82F6">@Model.MealsLoggedToday</div>
+            <div class="ft-stat-sub">
+                <a asp-controller="MealLog" asp-action="Index" style="color:#3B82F6;font-weight:600;font-size:11.5px;text-decoration:none;">View nutrition →</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="ft-stat-card">
+            <div class="ft-stat-ico ft-ib-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                </svg>
+            </div>
+            <div class="ft-stat-lbl">Active Goals</div>
+            <div class="ft-stat-val" style="color:#8B5CF6">@Model.ActiveGoals</div>
+            <div class="ft-stat-sub">
+                <a asp-controller="FitnessGoal" asp-action="Index" style="color:#8B5CF6;font-weight:600;font-size:11.5px;text-decoration:none;">View goals →</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart + Quick actions -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="ft-h2">Workout Activity</div>
+                    <div class="ft-muted mt-1">Sessions · Last 7 days</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="workoutChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <div class="ft-h2">Quick actions</div>
+            </div>
+            <div class="card-body d-flex flex-column gap-2">
+                <a asp-controller="WorkoutSession" asp-action="Create" class="btn btn-primary w-100 text-start d-flex align-items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Log Workout
+                </a>
+                <a asp-controller="MealLog" asp-action="Create" class="btn btn-ft-orange w-100 text-start d-flex align-items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Log Meal
+                </a>
+                <a asp-controller="FitnessGoal" asp-action="Create" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Add Goal
+                </a>
+                <a asp-controller="UserProfile" asp-action="Index" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+                    My Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const ctx = document.getElementById('workoutChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartLabels)),
+            datasets: [{
+                label: 'Sessions',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartData)),
+                backgroundColor: 'rgba(0,191,165,0.75)',
+                borderColor: '#00BFA5',
+                borderWidth: 2,
+                borderRadius: 6,
+                hoverBackgroundColor: '#00BFA5'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' session(s)' } }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, color: '#9AA2BD', font: { family: 'Inter', size: 11 } },
+                    grid: { color: '#EEF1F7' }
+                },
+                x: {
+                    ticks: { color: '#9AA2BD', font: { family: 'Inter', size: 11 } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+</script>
+}

@@ -1,0 +1,80 @@
+@model FitTrack.Models.FitnessGoal
+@{
+    ViewData["Title"] = "Add Goal";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header ft-card-header">
+                <h4 class="mb-0 text-white">Add New Goal</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="GoalTitle" class="form-label fw-semibold"></label>
+                            <input asp-for="GoalTitle" class="form-control" placeholder="e.g. Run 10km, Lose 5kg..." />
+                            <span asp-validation-for="GoalTitle" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="GoalType" class="form-label fw-semibold"></label>
+                            <select asp-for="GoalType" class="form-select">
+                                <option value="">-- Select Type --</option>
+                                <option>Weight Loss</option>
+                                <option>Muscle Gain</option>
+                                <option>Endurance</option>
+                                <option>Flexibility</option>
+                            </select>
+                            <span asp-validation-for="GoalType" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="Status" class="form-label fw-semibold"></label>
+                            <select asp-for="Status" class="form-select">
+                                <option>In Progress</option>
+                                <option>Completed</option>
+                                <option>Abandoned</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="TargetValue" class="form-label fw-semibold"></label>
+                            <input asp-for="TargetValue" class="form-control" type="number" step="0.1" min="0" placeholder="e.g. 10, 75, 100" />
+                            <span asp-validation-for="TargetValue" class="text-danger small"></span>
+                            <div class="form-text">Use any numeric unit relevant to your goal (kg, km, reps, %).</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="CurrentValue" class="form-label fw-semibold"></label>
+                            <input asp-for="CurrentValue" class="form-control" type="number" step="0.1" min="0" placeholder="e.g. 0, 80, 60" />
+                            <span asp-validation-for="CurrentValue" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="StartDate" class="form-label fw-semibold"></label>
+                            <input asp-for="StartDate" class="form-control" type="date" />
+                            <span asp-validation-for="StartDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="TargetDate" class="form-label fw-semibold"></label>
+                            <input asp-for="TargetDate" class="form-control" type="date" />
+                            <span asp-validation-for="TargetDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Optional notes or strategy..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">Save Goal</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

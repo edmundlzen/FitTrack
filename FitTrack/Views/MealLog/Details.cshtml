@@ -1,0 +1,66 @@
+@model FitTrack.Models.MealLog
+@{
+    ViewData["Title"] = "Meal Details";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header ft-card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 text-white">@Model.MealName</h4>
+                <span class="badge bg-white text-dark">@Model.MealType</span>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded text-center">
+                            <div class="text-muted small">Date</div>
+                            <div class="fw-semibold">@Model.LogDate.ToString("MMMM dd, yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded text-center">
+                            <div class="text-muted small">Calories</div>
+                            <div class="fs-3 fw-bold text-warning">@Model.Calories <small class="fs-6">kcal</small></div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded">
+                            <div class="text-muted small mb-2">Macronutrients</div>
+                            <div class="row text-center g-2">
+                                <div class="col-4">
+                                    <div class="fw-bold text-danger fs-5">@Model.Protein.ToString("F1")g</div>
+                                    <div class="text-muted small">Protein</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fw-bold text-primary fs-5">@Model.Carbohydrates.ToString("F1")g</div>
+                                    <div class="text-muted small">Carbs</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fw-bold text-success fs-5">@Model.Fats.ToString("F1")g</div>
+                                    <div class="text-muted small">Fats</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">Notes</div>
+                                <div>@Model.Notes</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.MealLogId" class="btn btn-primary">Edit</a>
+                <a asp-action="Delete" asp-route-id="@Model.MealLogId" class="btn btn-outline-danger">Delete</a>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-auto">← Back</a>
+            </div>
+        </div>
+    </div>
+</div>
