@@ -33,7 +33,7 @@
         <ApplicationTitle>FitTrack.Maui</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.fittrack.maui</ApplicationId>
+        <ApplicationId>com.ikun.fittrack</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
