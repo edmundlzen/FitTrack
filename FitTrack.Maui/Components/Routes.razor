@@ -1,0 +1,29 @@
+@using FitTrack.Maui.Components.Pages
+
+<ErrorBoundary>
+    <ChildContent>
+        <Router AppAssembly="typeof(MauiProgram).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                    <NotAuthorized>
+                        <Login />
+                    </NotAuthorized>
+                    <Authorizing>
+                        <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+                    </Authorizing>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="routeData" Selector="h1" />
+            </Found>
+        </Router>
+    </ChildContent>
+    <ErrorContent>
+        <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+            <div class="text-center p-4">
+                <p class="text-danger mb-3">Something went wrong. Please reload the app.</p>
+                <button class="btn btn-primary" onclick="window.location.reload()">Reload</button>
+            </div>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>

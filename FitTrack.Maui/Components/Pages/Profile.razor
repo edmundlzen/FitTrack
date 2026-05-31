@@ -1,0 +1,201 @@
+@page "/profile"
+@attribute [Authorize]
+@using FitTrack.Models
+@using FitTrack.Maui.Services
+@inject ApiClient Api
+
+<div class="container-fluid py-3 ft-page-enter">
+    @if (_loading)
+    {
+        <div class="card border-0 shadow-sm mb-3 ft-scale-enter">
+            <div class="card-body text-center py-4">
+                <div class="ft-skeleton d-inline-block mb-3" style="width:80px;height:80px;border-radius:50%"></div>
+                <div class="ft-skeleton mx-auto mb-2" style="width:140px;height:18px"></div>
+                <div class="ft-skeleton mx-auto mb-3" style="width:80px;height:14px"></div>
+                <div class="row g-2">
+                    <div class="col-4"><div class="ft-skeleton" style="height:56px"></div></div>
+                    <div class="col-4"><div class="ft-skeleton" style="height:56px"></div></div>
+                    <div class="col-4"><div class="ft-skeleton" style="height:56px"></div></div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (!_editing && _profile != null)
+        {
+            <div class="text-center mb-4" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0s">
+                <div class="ft-avatar mb-3" style="animation:ft-scale-in .3s var(--ft-ease) both;animation-delay:0.05s">
+                    @GetInitials(_profile.FullName)
+                </div>
+                <h5 class="fw-bold mb-0">@_profile.FullName</h5>
+                <small class="text-muted">@_profile.Age yrs · @_profile.Gender</small>
+            </div>
+
+            <div class="row g-2 mb-4" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.1s">
+                <div class="col-4">
+                    <div class="ft-stat-tile bg-white shadow-sm">
+                        <div class="ft-stat-value" style="color:var(--ft-teal)">@_profile.Height</div>
+                        <div class="ft-stat-label">cm</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="ft-stat-tile bg-white shadow-sm">
+                        <div class="ft-stat-value" style="color:#0d6efd">@_profile.Weight</div>
+                        <div class="ft-stat-label">kg</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="ft-stat-tile" style="background:linear-gradient(135deg,@GetBMIColor(_profile.BMI),@GetBMIColor2(_profile.BMI))">
+                        <div class="ft-stat-value text-white">@_profile.BMI</div>
+                        <div class="ft-stat-label text-white" style="opacity:0.85">BMI</div>
+                    </div>
+                </div>
+            </div>
+
+            @if (_dashboard != null)
+            {
+                <div class="row g-2 mb-4" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.15s">
+                    <div class="col-6">
+                        <div class="card border-0 shadow-sm p-3 text-center">
+                            <div class="fw-bold" style="font-size:1.5rem;color:var(--ft-teal)">@_dashboard.WeekWorkouts</div>
+                            <small class="text-muted">Workouts this week</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 shadow-sm p-3 text-center">
+                            <div class="fw-bold" style="font-size:1.5rem;color:#198754">@_dashboard.ActiveGoals</div>
+                            <small class="text-muted">Active goals</small>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.2s">
+                <button class="btn btn-outline-info w-100" @onclick="() => _editing = true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-right:6px"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    Edit Profile
+                </button>
+            </div>
+        }
+
+        @if (_editing || _profile == null)
+        {
+            <div class="card border-0 shadow-sm ft-scale-enter">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">@(_profile == null ? "Create" : "Edit") Profile</h6>
+                    <EditForm Model="_form" OnValidSubmit="SaveProfile">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted text-uppercase">Full Name</label>
+                            <InputText @bind-Value="_form.FullName" class="form-control" placeholder="Your full name" />
+                            <ValidationMessage For="() => _form.FullName" />
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">Age</label>
+                                <InputNumber @bind-Value="_form.Age" class="form-control" placeholder="Age" />
+                                <ValidationMessage For="() => _form.Age" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">Gender</label>
+                                <InputSelect @bind-Value="_form.Gender" class="form-select">
+                                    <option value="">Select</option>
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Other</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => _form.Gender" />
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">Height (cm)</label>
+                                <InputNumber @bind-Value="_form.Height" class="form-control" placeholder="Height" />
+                                <ValidationMessage For="() => _form.Height" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">Weight (kg)</label>
+                                <InputNumber @bind-Value="_form.Weight" class="form-control" placeholder="Weight" />
+                                <ValidationMessage For="() => _form.Weight" />
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-info text-white flex-fill" disabled="@_saving">
+                                @if (_saving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                Save
+                            </button>
+                            @if (_profile != null)
+                            {
+                                <button type="button" class="btn btn-outline-secondary flex-fill" @onclick="() => _editing = false">Cancel</button>
+                            }
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private UserProfile? _profile;
+    private ApiClient.DashboardSummary? _dashboard;
+    private UserProfile _form = new();
+    private bool _loading = true;
+    private bool _saving;
+    private bool _editing;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _profile = await Api.GetProfileAsync();
+        if (_profile != null)
+        {
+            _form = new UserProfile
+            {
+                UserProfileId = _profile.UserProfileId, UserId = _profile.UserId,
+                FullName = _profile.FullName,
+                Age = _profile.Age,
+                Gender = _profile.Gender,
+                Height = _profile.Height,
+                Weight = _profile.Weight
+            };
+        }
+        try { _dashboard = await Api.GetDashboardAsync(); } catch { }
+        _loading = false;
+    }
+
+    private async Task SaveProfile()
+    {
+        _saving = true;
+        var result = await Api.UpsertProfileAsync(_form);
+        if (result != null)
+        {
+            _profile = result;
+            _editing = false;
+        }
+        _saving = false;
+    }
+
+    private string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][..1].ToUpper();
+        return $"{parts[0][..1]}{parts[^1][..1]}".ToUpper();
+    }
+
+    private string GetBMIColor(double bmi)
+    {
+        if (bmi < 18.5) return "#3498db";
+        if (bmi < 25)   return "#00BFA5";
+        if (bmi < 30)   return "#f39c12";
+        return "#e74c3c";
+    }
+    private string GetBMIColor2(double bmi)
+    {
+        if (bmi < 18.5) return "#2980b9";
+        if (bmi < 25)   return "#06D6BC";
+        if (bmi < 30)   return "#e67e22";
+        return "#c0392b";
+    }
+}

@@ -1,0 +1,160 @@
+@page "/workouts"
+@attribute [Authorize]
+@using FitTrack.Models
+@using FitTrack.Maui.Services
+@inject ApiClient Api
+
+<div class="container-fluid py-3 ft-page-enter">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">Workouts</h4>
+        <button class="btn btn-primary btn-sm" @onclick="ShowAddForm">+ Add</button>
+    </div>
+
+    @if (_showForm)
+    {
+        <div class="card border-0 shadow-sm mb-3 ft-scale-enter">
+            <div class="card-body">
+                <h6>@(_editingId.HasValue ? "Edit" : "New") Workout</h6>
+                <EditForm Model="_form" OnValidSubmit="SaveWorkout">
+                    <DataAnnotationsValidator />
+                    <div class="mb-2">
+                        <InputText @bind-Value="_form.WorkoutName" class="form-control" placeholder="Workout name" />
+                        <ValidationMessage For="() => _form.WorkoutName" />
+                    </div>
+                    <div class="mb-2">
+                        <InputSelect @bind-Value="_form.Category" class="form-select">
+                            <option value="">Select category</option>
+                            <option>Cardio</option>
+                            <option>Strength</option>
+                            <option>Flexibility</option>
+                            <option>HIIT</option>
+                            <option>Sports</option>
+                        </InputSelect>
+                        <ValidationMessage For="() => _form.Category" />
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.DurationMinutes" class="form-control" placeholder="Duration (min)" />
+                            <ValidationMessage For="() => _form.DurationMinutes" />
+                        </div>
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.CaloriesBurned" class="form-control" placeholder="Calories burned" />
+                            <ValidationMessage For="() => _form.CaloriesBurned" />
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <InputDate @bind-Value="_form.SessionDate" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <InputTextArea @bind-Value="_form.Notes" class="form-control" rows="2" placeholder="Notes (optional)" />
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill" disabled="@_saving">Save</button>
+                        <button type="button" class="btn btn-outline-secondary flex-fill" @onclick="CancelForm">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+    }
+    else if (!_sessions.Any())
+    {
+        <div class="text-center py-5 text-muted">No workouts logged yet.</div>
+    }
+    else
+    {
+        int wi = 0;
+        @foreach (var session in _sessions)
+        {
+            <div class="card border-0 shadow-sm mb-2" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:@(wi * 0.06)s">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-semibold">@session.WorkoutName</div>
+                            <small class="text-muted">@session.Category · @session.SessionDate.ToString("MMM d, yyyy")</small>
+                            <div class="small">@session.DurationMinutes min · @session.CaloriesBurned cal burned</div>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditWorkout(session)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteWorkout(session.WorkoutSessionId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            wi++;
+        }
+    }
+</div>
+
+@code {
+    private List<WorkoutSession> _sessions = new();
+    private WorkoutSession _form = new() { SessionDate = DateTime.Today };
+    private bool _loading = true;
+    private bool _saving;
+    private bool _showForm;
+    private int? _editingId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWorkouts();
+    }
+
+    private async Task LoadWorkouts()
+    {
+        _loading = true;
+        _sessions = await Api.GetWorkoutsAsync();
+        _loading = false;
+    }
+
+    private void ShowAddForm()
+    {
+        _editingId = null;
+        _form = new WorkoutSession { SessionDate = DateTime.Today };
+        _showForm = true;
+    }
+
+    private void EditWorkout(WorkoutSession session)
+    {
+        _editingId = session.WorkoutSessionId;
+        _form = new WorkoutSession
+        {
+            WorkoutSessionId = session.WorkoutSessionId,
+            UserId = session.UserId,
+            WorkoutName = session.WorkoutName,
+            Category = session.Category,
+            DurationMinutes = session.DurationMinutes,
+            CaloriesBurned = session.CaloriesBurned,
+            SessionDate = session.SessionDate,
+            Notes = session.Notes
+        };
+        _showForm = true;
+    }
+
+    private void CancelForm()
+    {
+        _showForm = false;
+        _editingId = null;
+    }
+
+    private async Task SaveWorkout()
+    {
+        _saving = true;
+        if (_editingId.HasValue)
+            await Api.UpdateWorkoutAsync(_form);
+        else
+            await Api.CreateWorkoutAsync(_form);
+        _saving = false;
+        _showForm = false;
+        await LoadWorkouts();
+    }
+
+    private async Task DeleteWorkout(int id)
+    {
+        await Api.DeleteWorkoutAsync(id);
+        await LoadWorkouts();
+    }
+}

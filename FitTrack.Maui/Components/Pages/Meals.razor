@@ -1,0 +1,168 @@
+@page "/meals"
+@attribute [Authorize]
+@using FitTrack.Models
+@using FitTrack.Maui.Services
+@inject ApiClient Api
+
+<div class="container-fluid py-3 ft-page-enter">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">Meals</h4>
+        <button class="btn btn-success btn-sm" @onclick="ShowAddForm">+ Add</button>
+    </div>
+
+    @if (_showForm)
+    {
+        <div class="card border-0 shadow-sm mb-3 ft-scale-enter">
+            <div class="card-body">
+                <h6>@(_editingId.HasValue ? "Edit" : "New") Meal</h6>
+                <EditForm Model="_form" OnValidSubmit="SaveMeal">
+                    <DataAnnotationsValidator />
+                    <div class="mb-2">
+                        <InputText @bind-Value="_form.MealName" class="form-control" placeholder="Meal name" />
+                        <ValidationMessage For="() => _form.MealName" />
+                    </div>
+                    <div class="mb-2">
+                        <InputSelect @bind-Value="_form.MealType" class="form-select">
+                            <option value="">Select type</option>
+                            <option>Breakfast</option>
+                            <option>Lunch</option>
+                            <option>Dinner</option>
+                            <option>Snack</option>
+                        </InputSelect>
+                        <ValidationMessage For="() => _form.MealType" />
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.Calories" class="form-control" placeholder="Calories" />
+                            <ValidationMessage For="() => _form.Calories" />
+                        </div>
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.Protein" class="form-control" placeholder="Protein (g)" />
+                        </div>
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.Carbohydrates" class="form-control" placeholder="Carbs (g)" />
+                        </div>
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.Fats" class="form-control" placeholder="Fats (g)" />
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <InputDate @bind-Value="_form.LogDate" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <InputTextArea @bind-Value="_form.Notes" class="form-control" rows="2" placeholder="Notes (optional)" />
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success flex-fill" disabled="@_saving">Save</button>
+                        <button type="button" class="btn btn-outline-secondary flex-fill" @onclick="CancelForm">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <div class="text-center py-4"><div class="spinner-border text-success"></div></div>
+    }
+    else if (!_meals.Any())
+    {
+        <div class="text-center py-5 text-muted">No meals logged yet.</div>
+    }
+    else
+    {
+        @foreach (var group in _meals.GroupBy(m => m.LogDate.Date).OrderByDescending(g => g.Key))
+        {
+            <h6 class="text-muted fw-semibold mb-1 mt-3">@group.Key.ToString("dddd, MMM d")</h6>
+            @foreach (var meal in group)
+            {
+                <div class="card border-0 shadow-sm mb-2 ft-card-enter">
+                    <div class="card-body py-2 px-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-semibold">@meal.MealName</div>
+                                <small class="text-muted">@meal.MealType</small>
+                                <div class="small">@meal.Calories cal · P:@meal.Protein.ToString("F0")g C:@meal.Carbohydrates.ToString("F0")g F:@meal.Fats.ToString("F0")g</div>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-primary" @onclick="() => EditMeal(meal)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMeal(meal.MealLogId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+</div>
+
+@code {
+    private List<MealLog> _meals = new();
+    private MealLog _form = new() { LogDate = DateTime.Today };
+    private bool _loading = true;
+    private bool _saving;
+    private bool _showForm;
+    private int? _editingId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMeals();
+    }
+
+    private async Task LoadMeals()
+    {
+        _loading = true;
+        _meals = await Api.GetMealsAsync();
+        _loading = false;
+    }
+
+    private void ShowAddForm()
+    {
+        _editingId = null;
+        _form = new MealLog { LogDate = DateTime.Today };
+        _showForm = true;
+    }
+
+    private void EditMeal(MealLog meal)
+    {
+        _editingId = meal.MealLogId;
+        _form = new MealLog
+        {
+            MealLogId = meal.MealLogId,
+            UserId = meal.UserId,
+            MealName = meal.MealName,
+            MealType = meal.MealType,
+            Calories = meal.Calories,
+            Protein = meal.Protein,
+            Carbohydrates = meal.Carbohydrates,
+            Fats = meal.Fats,
+            LogDate = meal.LogDate,
+            Notes = meal.Notes
+        };
+        _showForm = true;
+    }
+
+    private void CancelForm()
+    {
+        _showForm = false;
+        _editingId = null;
+    }
+
+    private async Task SaveMeal()
+    {
+        _saving = true;
+        if (_editingId.HasValue)
+            await Api.UpdateMealAsync(_form);
+        else
+            await Api.CreateMealAsync(_form);
+        _saving = false;
+        _showForm = false;
+        await LoadMeals();
+    }
+
+    private async Task DeleteMeal(int id)
+    {
+        await Api.DeleteMealAsync(id);
+        await LoadMeals();
+    }
+}

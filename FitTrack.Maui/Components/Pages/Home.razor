@@ -1,0 +1,12 @@
+@page "/"
+@attribute [Authorize]
+@inject NavigationManager Nav
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Wait a tick for auth state to settle, then redirect to dashboard
+        await Task.Delay(100);
+        Nav.NavigateTo("/dashboard");
+    }
+}

@@ -1,0 +1,193 @@
+@page "/goals"
+@attribute [Authorize]
+@using FitTrack.Models
+@using FitTrack.Maui.Services
+@inject ApiClient Api
+
+<div class="container-fluid py-3 ft-page-enter">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">Goals</h4>
+        <button class="btn btn-warning btn-sm text-dark" @onclick="ShowAddForm">+ Add</button>
+    </div>
+
+    @if (_showForm)
+    {
+        <div class="card border-0 shadow-sm mb-3 ft-scale-enter">
+            <div class="card-body">
+                <h6>@(_editingId.HasValue ? "Edit" : "New") Goal</h6>
+                <EditForm Model="_form" OnValidSubmit="SaveGoal">
+                    <DataAnnotationsValidator />
+                    <div class="mb-2">
+                        <InputText @bind-Value="_form.GoalTitle" class="form-control" placeholder="Goal title" />
+                        <ValidationMessage For="() => _form.GoalTitle" />
+                    </div>
+                    <div class="mb-2">
+                        <InputSelect @bind-Value="_form.GoalType" class="form-select">
+                            <option value="">Select type</option>
+                            <option>Weight Loss</option>
+                            <option>Muscle Gain</option>
+                            <option>Endurance</option>
+                            <option>Strength</option>
+                            <option>Flexibility</option>
+                            <option>Nutrition</option>
+                        </InputSelect>
+                        <ValidationMessage For="() => _form.GoalType" />
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.TargetValue" class="form-control" placeholder="Target value" />
+                            <ValidationMessage For="() => _form.TargetValue" />
+                        </div>
+                        <div class="col-6">
+                            <InputNumber @bind-Value="_form.CurrentValue" class="form-control" placeholder="Current value" />
+                            <ValidationMessage For="() => _form.CurrentValue" />
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <InputDate @bind-Value="_form.StartDate" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <InputDate @bind-Value="_form.TargetDate" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <InputSelect @bind-Value="_form.Status" class="form-select">
+                            <option>In Progress</option>
+                            <option>Completed</option>
+                            <option>Abandoned</option>
+                        </InputSelect>
+                    </div>
+                    <div class="mb-3">
+                        <InputTextArea @bind-Value="_form.Notes" class="form-control" rows="2" placeholder="Notes (optional)" />
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning text-dark flex-fill" disabled="@_saving">Save</button>
+                        <button type="button" class="btn btn-outline-secondary flex-fill" @onclick="CancelForm">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <div class="text-center py-4"><div class="spinner-border text-warning"></div></div>
+    }
+    else if (!_goals.Any())
+    {
+        <div class="text-center py-5 text-muted">No goals set yet.</div>
+    }
+    else
+    {
+        int gi = 0;
+        @foreach (var goal in _goals)
+        {
+            <div class="card border-0 shadow-sm mb-2" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:@(gi * 0.06)s;border-left:4px solid @GetGoalBorderColor(goal.Status)">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                            <div class="fw-semibold">@goal.GoalTitle</div>
+                            <small class="text-muted">@goal.GoalType · Target: @goal.TargetDate.ToString("MMM d, yyyy")</small>
+                        </div>
+                        <div class="d-flex gap-1 align-items-start">
+                            <span class="badge @goal.StatusBadgeClass">@goal.Status</span>
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditGoal(goal)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteGoal(goal.FitnessGoalId)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>@goal.CurrentValue / @goal.TargetValue</span>
+                        <span>@goal.ProgressPercentage%</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" role="progressbar"
+                             style="width: @goal.ProgressPercentage%"
+                             aria-valuenow="@goal.ProgressPercentage"
+                             aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+            gi++;
+        }
+    }
+</div>
+
+@code {
+    private List<FitnessGoal> _goals = new();
+    private FitnessGoal _form = new() { StartDate = DateTime.Today, TargetDate = DateTime.Today.AddMonths(3), Status = "In Progress" };
+    private bool _loading = true;
+    private bool _saving;
+    private bool _showForm;
+    private int? _editingId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGoals();
+    }
+
+    private async Task LoadGoals()
+    {
+        _loading = true;
+        _goals = await Api.GetGoalsAsync();
+        _loading = false;
+    }
+
+    private void ShowAddForm()
+    {
+        _editingId = null;
+        _form = new FitnessGoal { StartDate = DateTime.Today, TargetDate = DateTime.Today.AddMonths(3), Status = "In Progress" };
+        _showForm = true;
+    }
+
+    private void EditGoal(FitnessGoal goal)
+    {
+        _editingId = goal.FitnessGoalId;
+        _form = new FitnessGoal
+        {
+            FitnessGoalId = goal.FitnessGoalId,
+            UserId = goal.UserId,
+            GoalTitle = goal.GoalTitle,
+            GoalType = goal.GoalType,
+            TargetValue = goal.TargetValue,
+            CurrentValue = goal.CurrentValue,
+            StartDate = goal.StartDate,
+            TargetDate = goal.TargetDate,
+            Status = goal.Status,
+            Notes = goal.Notes
+        };
+        _showForm = true;
+    }
+
+    private void CancelForm()
+    {
+        _showForm = false;
+        _editingId = null;
+    }
+
+    private async Task SaveGoal()
+    {
+        _saving = true;
+        if (_editingId.HasValue)
+            await Api.UpdateGoalAsync(_form);
+        else
+            await Api.CreateGoalAsync(_form);
+        _saving = false;
+        _showForm = false;
+        await LoadGoals();
+    }
+
+    private async Task DeleteGoal(int id)
+    {
+        await Api.DeleteGoalAsync(id);
+        await LoadGoals();
+    }
+
+    private string GetGoalBorderColor(string? status) => status switch
+    {
+        "Completed" => "#198754",
+        "In Progress" => "var(--ft-teal)",
+        "Abandoned" => "#6c757d",
+        _ => "var(--ft-line)"
+    };
+}

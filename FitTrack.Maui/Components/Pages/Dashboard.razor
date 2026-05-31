@@ -1,0 +1,183 @@
+@page "/dashboard"
+@attribute [Authorize]
+@using FitTrack.Maui.Services
+@inject ApiClient Api
+@inject FitTrackAuthStateProvider AuthProvider
+@inject NavigationManager Nav
+
+<div class="container-fluid py-3 ft-page-enter">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Dashboard</h4>
+            <small class="text-muted">@DateTime.Today.ToString("dddd, MMM d")</small>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" @onclick="Logout">Sign Out</button>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="row g-2 mb-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="col-6"><div class="ft-skeleton" style="height:80px"></div></div>
+            }
+        </div>
+        <div class="row g-2 mb-4">
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="col-4"><div class="ft-skeleton" style="height:70px"></div></div>
+            }
+        </div>
+        <div class="row g-2 mb-4">
+            <div class="col-6"><div class="ft-skeleton" style="height:40px"></div></div>
+            <div class="col-6"><div class="ft-skeleton" style="height:40px"></div></div>
+        </div>
+    }
+    else if (_error != null)
+    {
+        <div class="alert alert-danger ft-scale-enter">
+            <strong>Error loading dashboard</strong>
+            <pre class="mb-0 small mt-2">@_error</pre>
+        </div>
+    }
+    else if (_data != null)
+    {
+        <h6 class="text-muted fw-semibold text-uppercase small mb-2">Today's Nutrition</h6>
+        <div class="row g-2 mb-4">
+            <div class="col-6">
+                <div class="card border-0 p-3 rounded-3 ft-stat-card text-white" style="background:linear-gradient(135deg,#0d6efd,#6610f2);animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0s">
+                    <div class="ft-stat-num">@_data.TodayCalories</div>
+                    <div class="opacity-75 small">Calories</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card border-0 p-3 rounded-3 ft-stat-card text-white" style="background:linear-gradient(135deg,#198754,#20c997);animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.04s">
+                    <div class="ft-stat-num">@_data.TodayProtein.ToString("F0")g</div>
+                    <div class="opacity-75 small">Protein</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card border-0 p-3 rounded-3 ft-stat-card text-dark" style="background:linear-gradient(135deg,#ffc107,#fd7e14);animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.08s">
+                    <div class="ft-stat-num">@_data.TodayCarbs.ToString("F0")g</div>
+                    <div class="opacity-75 small">Carbs</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card border-0 p-3 rounded-3 ft-stat-card text-white" style="background:linear-gradient(135deg,#0dcaf0,#0d6efd);animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.12s">
+                    <div class="ft-stat-num">@_data.TodayFats.ToString("F0")g</div>
+                    <div class="opacity-75 small">Fats</div>
+                </div>
+            </div>
+        </div>
+
+        <h6 class="text-muted fw-semibold text-uppercase small mb-2">This Week</h6>
+        <div class="row g-2 mb-4">
+            <div class="col-4">
+                <div class="card border-0 p-3 rounded-3 text-center ft-stat-card" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.16s">
+                    <div class="fw-bold" style="font-size:1.25rem;color:var(--ft-teal)">@_data.WeekWorkouts</div>
+                    <div class="small text-muted">Workouts</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border-0 p-3 rounded-3 text-center ft-stat-card" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.20s">
+                    <div class="fw-bold" style="font-size:1.25rem;color:#dc3545">@_data.WeekCaloriesBurned</div>
+                    <div class="small text-muted">Cal Burned</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border-0 p-3 rounded-3 text-center ft-stat-card" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.24s">
+                    <div class="fw-bold" style="font-size:1.25rem;color:#198754">@_data.ActiveGoals</div>
+                    <div class="small text-muted">Goals</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mb-4" style="animation:ft-fade-up .35s var(--ft-ease) both;animation-delay:0.28s">
+            <button class="btn btn-primary flex-fill" @onclick='() => Nav.NavigateTo("/workouts")'>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Workout
+            </button>
+            <button class="btn btn-success flex-fill" @onclick='() => Nav.NavigateTo("/meals")'>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Meal
+            </button>
+        </div>
+
+        @if (_data.RecentWorkouts.Any())
+        {
+            <h6 class="text-muted fw-semibold text-uppercase small mb-2">Recent Workouts</h6>
+            <div class="card border-0 shadow-sm mb-4">
+                @{ int wi = 0; }
+                @foreach (var w in _data.RecentWorkouts)
+                {
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 @(wi < _data.RecentWorkouts.Count - 1 ? "border-bottom" : "")" style="animation:ft-fade-up .3s var(--ft-ease) both;animation-delay:@(wi * 0.05)s">
+                        <div>
+                            <div class="fw-semibold small">@w.WorkoutName</div>
+                            <small class="text-muted">@w.Category · @w.DurationMinutes min</small>
+                        </div>
+                        <span class="badge bg-danger">-@w.CaloriesBurned cal</span>
+                    </div>
+                    wi++;
+                }
+            </div>
+        }
+
+        @if (_data.RecentMeals.Any())
+        {
+            <h6 class="text-muted fw-semibold text-uppercase small mb-2">Recent Meals</h6>
+            <div class="card border-0 shadow-sm">
+                @{ int mi = 0; }
+                @foreach (var m in _data.RecentMeals)
+                {
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 @(mi < _data.RecentMeals.Count - 1 ? "border-bottom" : "")" style="animation:ft-fade-up .3s var(--ft-ease) both;animation-delay:@(mi * 0.05)s">
+                        <div>
+                            <div class="fw-semibold small">@m.MealName</div>
+                            <small class="text-muted">@m.MealType · @m.LogDate.ToString("MMM d")</small>
+                        </div>
+                        <span class="badge bg-primary">@m.Calories cal</span>
+                    </div>
+                    mi++;
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-warning ft-scale-enter">Could not load dashboard data.</div>
+    }
+</div>
+
+@code {
+    private ApiClient.DashboardSummary? _data;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _data = await Api.GetDashboardAsync();
+        }
+        catch (Exception ex)
+        {
+            var inner = ex;
+            var fullMsg = "";
+            while (inner != null) {
+                fullMsg += $"{inner.GetType().Name}: {inner.Message}\n{inner.StackTrace}\n";
+                inner = inner.InnerException;
+                if (inner != null) fullMsg += "--- Inner ---\n";
+            }
+            _error = fullMsg;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Logout()
+    {
+        AuthProvider.NotifyUserLoggedOut();
+        Nav.NavigateTo("/login");
+    }
+}
