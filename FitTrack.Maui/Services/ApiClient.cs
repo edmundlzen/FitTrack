@@ -11,7 +11,7 @@ namespace FitTrack.Maui.Services
         private const string TokenKey = "jwt_token";
         private string? _cachedToken;
 
-        private const string BaseUrl = "https://exposed-port-5235-c817d45956475baeee8f-6tp9h4sk0r.h100.openclaw.agent37.com/";
+        private const string BaseUrl = "https://dotnet.strontiumlabs.com/";
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
